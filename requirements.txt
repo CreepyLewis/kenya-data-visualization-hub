@@ -1,0 +1,14 @@
+# Navigate to your project folder
+cd /path/to/kenya-data-visualization-hub
+
+# Create requirements.txt
+echo "streamlit==1.28.1
+pandas==2.0.3
+plotly==5.17.0
+scikit-learn==1.3.0
+numpy==1.24.3" > requirements.txt
+
+# Add to git, commit, and push
+git add requirements.txt
+git commit -m "Add requirements.txt for Streamlit Cloud"
+git push
