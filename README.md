@@ -1,4 +1,8 @@
 # 🇰🇪 Kenya Data Visualization Hub
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Status](https://img.shields.io/badge/Status-Active-success)
 
 <p align="center">
 Transforming Kenyan public datasets into meaningful visual insights.
