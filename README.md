@@ -20,7 +20,7 @@ This project promotes **data literacy**, **research support**, and **open data a
 
 ## 🚀 Features
 
-- 📈 Population trend analysis
+- 📈 Population trend analysis,
 - 💰 Economic indicators visualization,
 - 🎓 Education statistics dashboards,
 - 📊 Interactive charts and dashboards,
