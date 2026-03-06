@@ -24,7 +24,7 @@ This project promotes **data literacy**, **research support**, and **open data a
 - 💰 Economic indicators visualization
 - 🎓 Education statistics dashboards
 - 📊 Interactive charts and dashboards
-- 🌐 Streamlit web interface,
+- 🌐 Streamlit web interface
 - 🧮 Statistical data exploration
 
 ---
