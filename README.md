@@ -22,7 +22,7 @@ This project promotes **data literacy**, **research support**, and **open data a
 
 - 📈 Population trend analysis
 - 💰 Economic indicators visualization
-- 🎓 Education statistics dashboards,
+- 🎓 Education statistics dashboards
 - 📊 Interactive charts and dashboards,
 - 🌐 Streamlit web interface,
 - 🧮 Statistical data exploration
