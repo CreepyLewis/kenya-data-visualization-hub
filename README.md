@@ -25,7 +25,7 @@ This project promotes **data literacy**, **research support**, and **open data a
 - 🎓 Education statistics dashboards
 - 📊 Interactive charts and dashboards
 - 🌐 Streamlit web interface
-- 🧮 Statistical data exploration,
+- 🧮 Statistical data exploration
 
 ---
 
