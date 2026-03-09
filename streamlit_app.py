@@ -5,10 +5,6 @@ import plotly.express as px
 from sklearn.linear_model import LinearRegression
 import os
 
-# Uncomment if using OpenAI Chatbot
-# import openai
-# openai.api_key = st.secrets["OPENAI_API_KEY"]
-
 # -------------------------------
 # PAGE CONFIG
 # -------------------------------
@@ -21,7 +17,7 @@ st.set_page_config(
 st.title("🇰🇪 Kenya AI Data Platform")
 st.markdown(
 """
-Interactive platform for **Kenya population analytics**, forecasting, and AI insights.
+Interactive platform for **Kenya population analytics**, forecasting, county maps, and AI insights.
 """
 )
 
@@ -177,14 +173,35 @@ elif page == "📂 Dataset Explorer":
     )
 
 # ===============================
-# AI DATA ASSISTANT
+# AI DATA ASSISTANT (GROQ_API_KEY safe)
 # ===============================
 elif page == "💬 AI Data Assistant":
     st.subheader("Ask Questions About the Dataset")
 
     question = st.text_input("Type your question here:")
+
     if question:
-        # Example logic without API (replace with OpenAI API if available)
-        st.info("This is a placeholder AI response. Connect OpenAI API to get real answers.")
-        st.write(f"Question asked: {question}")
-        st.write("Sample answer: Based on the dataset, Kenya's population trends are increasing every year.")
+        import openai
+
+        # Load API key safely from Streamlit secrets
+        openai.api_key = st.secrets["GROQ_API_KEY"]
+
+        # Provide GPT a small dataset preview
+        dataset_preview = population.tail(20).to_dict(orient="records")
+        prompt = f"""
+        You are a data assistant for Kenya population dataset.
+        Dataset preview: {dataset_preview}
+        Answer the following question based on this data:
+        {question}
+        """
+
+        # GPT API call
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=200,
+            temperature=0
+        )
+
+        # Display answer
+        st.info(response.choices[0].text.strip())
