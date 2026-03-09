@@ -1,156 +1,202 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import numpy as np
+import plotly.express as px
 from sklearn.linear_model import LinearRegression
 
-# ------------------------------------------------
+# ---------------------------------------------------
 # PAGE CONFIG
-# ------------------------------------------------
+# ---------------------------------------------------
 st.set_page_config(
-    page_title="Kenya Data Visualization Hub",
+    page_title="Kenya AI Data Platform",
     page_icon="🇰🇪",
     layout="wide"
 )
 
-# ------------------------------------------------
-# TITLE
-# ------------------------------------------------
-st.title("🇰🇪 Kenya Data Visualization Hub")
+# ---------------------------------------------------
+# HEADER
+# ---------------------------------------------------
+st.title("🇰🇪 Kenya AI Data Platform")
+
 st.markdown(
 """
-### Explore Kenyan population trends, insights and predictions
-Interactive analytics powered by **Python, Streamlit and Machine Learning**
+Explore Kenyan public datasets using **interactive dashboards,
+machine learning predictions and geographic visualization**.
 """
 )
 
-# ------------------------------------------------
+# ---------------------------------------------------
 # LOAD DATA
-# ------------------------------------------------
+# ---------------------------------------------------
 @st.cache_data
-def load_data():
+def load_population():
     return pd.read_csv("data/raw/population.csv")
 
-data = load_data()
+@st.cache_data
+def load_counties():
+    return pd.read_csv("data/raw/counties.csv")
 
-# ------------------------------------------------
-# SIDEBAR FILTERS
-# ------------------------------------------------
-st.sidebar.header("🔎 Filter Data")
+population = load_population()
 
-year_range = st.sidebar.slider(
-    "Select Year Range",
-    int(data["Year"].min()),
-    int(data["Year"].max()),
-    (int(data["Year"].min()), int(data["Year"].max()))
+# ---------------------------------------------------
+# SIDEBAR NAVIGATION
+# ---------------------------------------------------
+st.sidebar.title("Navigation")
+
+page = st.sidebar.radio(
+    "Go to",
+    [
+        "📊 Population Dashboard",
+        "🤖 AI Forecast",
+        "🗺 County Map",
+        "📂 Dataset Explorer"
+    ]
 )
 
-filtered_data = data[
-    (data["Year"] >= year_range[0]) &
-    (data["Year"] <= year_range[1])
-]
+# ===================================================
+# POPULATION DASHBOARD
+# ===================================================
+if page == "📊 Population Dashboard":
 
-# ------------------------------------------------
-# KPI DASHBOARD
-# ------------------------------------------------
-st.subheader("📊 Key Metrics")
+    st.subheader("Kenya Population Analytics")
 
-c1, c2, c3 = st.columns(3)
+    year_range = st.slider(
+        "Select Year Range",
+        int(population["Year"].min()),
+        int(population["Year"].max()),
+        (int(population["Year"].min()), int(population["Year"].max()))
+    )
 
-c1.metric("Start Year", int(filtered_data["Year"].min()))
-c2.metric("End Year", int(filtered_data["Year"].max()))
+    filtered = population[
+        (population["Year"] >= year_range[0]) &
+        (population["Year"] <= year_range[1])
+    ]
 
-latest_pop = filtered_data["Population"].iloc[-1]
-c3.metric("Latest Population", f"{latest_pop:,}")
+    # KPI metrics
+    c1, c2, c3 = st.columns(3)
 
-# ------------------------------------------------
-# MAIN CHARTS
-# ------------------------------------------------
-col1, col2 = st.columns(2)
+    c1.metric("Start Year", int(filtered["Year"].min()))
+    c2.metric("End Year", int(filtered["Year"].max()))
+    c3.metric("Latest Population", f"{filtered['Population'].iloc[-1]:,}")
 
-# Population Trend
-with col1:
+    col1, col2 = st.columns(2)
+
+    # population trend
+    with col1:
+        fig = px.line(
+            filtered,
+            x="Year",
+            y="Population",
+            markers=True,
+            title="Population Trend"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    # growth rate
+    with col2:
+
+        filtered["Growth %"] = filtered["Population"].pct_change() * 100
+
+        fig2 = px.bar(
+            filtered,
+            x="Year",
+            y="Growth %",
+            title="Population Growth Rate"
+        )
+
+        st.plotly_chart(fig2, use_container_width=True)
+
+# ===================================================
+# AI FORECAST
+# ===================================================
+elif page == "🤖 AI Forecast":
+
+    st.subheader("AI Population Forecast")
+
+    X = population[["Year"]]
+    y = population["Population"]
+
+    model = LinearRegression()
+    model.fit(X, y)
+
+    future_year = st.slider(
+        "Select Future Year",
+        int(population["Year"].max()) + 1,
+        2050
+    )
+
+    prediction = model.predict(np.array([[future_year]]))
+
+    st.success(
+        f"Estimated population in {future_year}: {int(prediction[0]):,}"
+    )
+
+    # forecast chart
+    future_df = pd.DataFrame({
+        "Year": [future_year],
+        "Population": [prediction[0]]
+    })
+
+    combined = pd.concat([population, future_df])
 
     fig = px.line(
-        filtered_data,
+        combined,
         x="Year",
         y="Population",
         markers=True,
-        title="Kenya Population Trend"
+        title="Population Trend + Forecast"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
-# Growth Rate
-with col2:
+# ===================================================
+# COUNTY MAP
+# ===================================================
+elif page == "🗺 County Map":
 
-    filtered_data["Growth %"] = filtered_data["Population"].pct_change() * 100
+    st.subheader("Kenya County Population Map")
 
-    fig2 = px.bar(
-        filtered_data,
-        x="Year",
-        y="Growth %",
-        title="Population Growth Rate (%)"
+    counties = load_counties()
+
+    fig = px.choropleth(
+        counties,
+        geojson="assets/kenya.geojson",
+        locations="County",
+        featureidkey="properties.county",
+        color="Population",
+        title="Population by County"
     )
 
-    st.plotly_chart(fig2, use_container_width=True)
+    fig.update_geos(fitbounds="locations", visible=False)
 
-# ------------------------------------------------
-# MACHINE LEARNING PREDICTION
-# ------------------------------------------------
-st.subheader("🤖 Population Prediction")
+    st.plotly_chart(fig, use_container_width=True)
 
-X = data[["Year"]]
-y = data["Population"]
+# ===================================================
+# DATASET EXPLORER
+# ===================================================
+elif page == "📂 Dataset Explorer":
 
-model = LinearRegression()
-model.fit(X, y)
+    st.subheader("Dataset Explorer")
 
-future_year = st.slider(
-    "Predict Population For Year",
-    int(data["Year"].max()) + 1,
-    2050
-)
+    st.dataframe(population, use_container_width=True)
 
-prediction = model.predict(np.array([[future_year]]))
+    st.download_button(
+        "⬇ Download Dataset",
+        population.to_csv(index=False),
+        "kenya_population.csv",
+        "text/csv"
+    )
 
-st.success(
-    f"Estimated Population in {future_year}: {int(prediction[0]):,}"
-)
+# ---------------------------------------------------
+# FOOTER
+# ---------------------------------------------------
+st.markdown("---")
 
-# ------------------------------------------------
-# FORECAST VISUALIZATION
-# ------------------------------------------------
-future_df = pd.DataFrame({
-    "Year": [future_year],
-    "Population": [prediction[0]]
-})
+st.markdown(
+"""
+Built with **Python, Streamlit, Plotly and Machine Learning**
 
-combined = pd.concat([data, future_df])
-
-fig3 = px.line(
-    combined,
-    x="Year",
-    y="Population",
-    markers=True,
-    title="Population Trend + Forecast"
-)
-
-st.plotly_chart(fig3, use_container_width=True)
-
-# ------------------------------------------------
-# DATASET TABLE
-# ------------------------------------------------
-st.subheader("📂 Dataset Preview")
-
-st.dataframe(filtered_data, use_container_width=True)
-
-# ------------------------------------------------
-# DOWNLOAD DATA
-# ------------------------------------------------
-st.download_button(
-    "⬇ Download Filtered Dataset",
-    filtered_data.to_csv(index=False),
-    "kenya_population_data.csv",
-    "text/csv"
+Kenyan Open Data Analytics Platform
+"""
 )
