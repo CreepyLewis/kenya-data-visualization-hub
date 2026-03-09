@@ -4,6 +4,7 @@ import numpy as np
 import plotly.express as px
 from sklearn.linear_model import LinearRegression
 import os
+import openai
 
 # -------------------------------
 # PAGE CONFIG
@@ -151,7 +152,7 @@ elif page == "🗺 County Map":
             counties,
             geojson="assets/kenya.geojson",
             locations="County",
-            featureidkey="properties.county",
+            featureidkey="properties.county",  # adjust if your GeoJSON uses a different property name
             color="Population",
             color_continuous_scale="Viridis",
             title="Population by County"
@@ -173,7 +174,7 @@ elif page == "📂 Dataset Explorer":
     )
 
 # ===============================
-# AI DATA ASSISTANT (GROQ_API_KEY safe)
+# AI DATA ASSISTANT (ChatCompletion API)
 # ===============================
 elif page == "💬 AI Data Assistant":
     st.subheader("Ask Questions About the Dataset")
@@ -181,27 +182,28 @@ elif page == "💬 AI Data Assistant":
     question = st.text_input("Type your question here:")
 
     if question:
-        import openai
-
         # Load API key safely from Streamlit secrets
         openai.api_key = st.secrets["GROQ_API_KEY"]
 
-        # Provide GPT a small dataset preview
+        # Prepare dataset preview for GPT
         dataset_preview = population.tail(20).to_dict(orient="records")
         prompt = f"""
-        You are a data assistant for Kenya population dataset.
+        You are a helpful data assistant for Kenya population dataset.
         Dataset preview: {dataset_preview}
         Answer the following question based on this data:
         {question}
         """
 
-        # GPT API call
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=200,
-            temperature=0
+        # New ChatCompletion API
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful data assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0,
+            max_tokens=200
         )
 
-        # Display answer
-        st.info(response.choices[0].text.strip())
+        # Display GPT answer
+        st.info(response.choices[0].message.content.strip())
