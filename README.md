@@ -10,6 +10,7 @@ Transforming Kenyan public datasets into meaningful visual insights.
 
 ---
 
+
 ## 📊 About The Project>>
 
 Kenya Data Visualization Hub is an open-source platform that collects, analyzes, and visualizes Kenyan public datasets to reveal trends and insights using modern data science tools.
